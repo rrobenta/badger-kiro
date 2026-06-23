@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Badger MMA</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-page="dashboard" onclick="navigate('dashboard')">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-btn" data-page="members" onclick="navigate('members')">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <span>Members</span>
+      </button>
+      <button class="nav-btn" data-page="classes" onclick="navigate('classes')">
+        <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+        <span>Classes</span>
+      </button>
+      <button class="nav-btn" data-page="payments" onclick="navigate('payments')">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        <span>Payments</span>
+      </button>
+      <button class="nav-btn" data-page="expenses" onclick="navigate('expenses')">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-1c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h1V7h-2c-1.1 0-2 .9-2 2v1H8v2h1v4H8v2h1c0 1.1.9 2 2 2v-1zm4-6h-1V9c0-1.1-.9-2-2-2h-1V5h2c1.1 0 2 .9 2 2v4z"/></svg>
+        <span>Expenses</span>
+      </button>
+    </nav>
+
+    <!-- Pages -->
+    <main id="main-content">
+      <!-- Dashboard -->
+      <div id="page-dashboard" class="page active">
+        <header class="page-header">
+          <div class="brand">
+            <img src="logo.png" alt="Badger MMA" class="brand-logo" />
+            <h1>Badger MMA</h1>
+          </div>
+          <span class="date" id="today-date"></span>
+        </header>
+        <div class="content">
+          <div class="stats-grid">
+            <div class="stat-card accent-blue">
+              <div class="stat-value" id="stat-members">0</div>
+              <div class="stat-label">Total Members</div>
+            </div>
+            <div class="stat-card accent-green">
+              <div class="stat-value" id="stat-active">0</div>
+              <div class="stat-label">Check-ins Today</div>
+            </div>
+            <div class="stat-card accent-orange">
+              <div class="stat-value" id="stat-classes">0</div>
+              <div class="stat-label">Classes Today</div>
+            </div>
+            <div class="stat-card accent-purple">
+              <div class="stat-value" id="stat-revenue">$0</div>
+              <div class="stat-label">This Month</div>
+            </div>
+          </div>
+
+          <section class="section">
+            <h2>Today's Summary</h2>
+            <div class="daily-summary" id="daily-summary">
+              <div class="summary-row">
+                <span class="summary-label">Monthly Income</span>
+                <span class="summary-val positive" id="ds-monthly">$0</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Drop-in Income</span>
+                <span class="summary-val positive" id="ds-dropin">$0</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Expenses</span>
+                <span class="summary-val negative" id="ds-expenses">$0</span>
+              </div>
+              <div class="summary-row summary-total">
+                <span class="summary-label">Net Profit</span>
+                <span class="summary-val" id="ds-profit">$0</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>Weekly Attendance</h2>
+            <div id="chart-attendance" class="chart-container"></div>
+          </section>
+
+          <section class="section">
+            <h2>Monthly Revenue</h2>
+            <div id="chart-revenue" class="chart-container"></div>
+          </section>
+
+          <section class="section">
+            <h2>Attendance by Class</h2>
+            <div id="chart-class-attendance" class="chart-container"></div>
+          </section>
+
+          <section class="section" id="reminders-section" style="display:none">
+            <h2>⚠️ Expiry Reminders</h2>
+            <div id="reminders-list" class="list"></div>
+          </section>
+
+          <section class="section">
+            <h2>Today's Classes</h2>
+            <div id="today-classes-list" class="list"></div>
+          </section>
+
+          <section class="section">
+            <h2>Recent Check-ins</h2>
+            <div id="checkins-list" class="list"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Members -->
+      <div id="page-members" class="page">
+        <header class="page-header">
+          <h1>Members</h1>
+          <button class="icon-btn" onclick="openModal('add-member-modal')">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
+        </header>
+        <div class="content">
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="member-search" placeholder="Search members..." oninput="filterMembers()" />
+          </div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setMemberFilter('all', this)">All</button>
+            <button class="filter-tab" onclick="setMemberFilter('active', this)">Active</button>
+            <button class="filter-tab" onclick="setMemberFilter('inactive', this)">Inactive</button>
+          </div>
+          <div id="members-list" class="list"></div>
+        </div>
+      </div>
+
+      <!-- Classes -->
+      <div id="page-classes" class="page">
+        <header class="page-header">
+          <h1>Classes</h1>
+          <button class="icon-btn" onclick="openModal('add-class-modal')">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
+        </header>
+        <div class="content">
+          <div class="day-picker" id="day-picker"></div>
+          <div id="classes-list" class="list"></div>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div id="page-payments" class="page">
+        <header class="page-header">
+          <h1>Payments</h1>
+          <div class="header-actions">
+            <button class="icon-btn accent-green-btn" onclick="openModal('buy-sessions-modal')" title="New Purchase">
+              <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="openModal('add-payment-modal')" title="Record Payment">
+              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="content">
+          <div class="revenue-banner">
+            <div class="revenue-label">This Month's Revenue</div>
+            <div class="revenue-amount" id="monthly-revenue">$0</div>
+          </div>
+          <div id="payments-list" class="list"></div>
+        </div>
+      </div>
+
+      <!-- Expenses -->
+      <div id="page-expenses" class="page">
+        <header class="page-header">
+          <h1>Expenses</h1>
+          <button class="icon-btn" style="background:var(--accent-red)" onclick="openModal('add-expense-modal')">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </button>
+        </header>
+        <div class="content">
+          <div class="revenue-banner expense-banner">
+            <div class="revenue-label">This Month's Expenses</div>
+            <div class="revenue-amount" id="monthly-expenses" style="color:var(--accent-red)">$0</div>
+          </div>
+          <div id="expenses-list" class="list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal: Add Member -->
+  <div id="add-member-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'add-member-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Member</h3>
+        <button class="close-btn" onclick="closeModal('add-member-modal')">✕</button>
+      </div>
+      <form id="add-member-form" onsubmit="addMember(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="m-name" required placeholder="Jane Smith" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="m-phone" placeholder="+1 555 000 0000" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="m-email" placeholder="jane@example.com" />
+        </div>
+        <button type="submit" class="btn-primary">Add Member</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Purchase -->
+  <div id="buy-sessions-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'buy-sessions-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Purchase</h3>
+        <button class="close-btn" onclick="closeModal('buy-sessions-modal')">✕</button>
+      </div>
+      <form id="buy-sessions-form" onsubmit="purchasePlan(event)">
+        <div class="form-group">
+          <label>Member</label>
+          <select id="bs-member" required></select>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="bs-type" onchange="updatePurchaseTotal()">
+            <option value="monthly">Monthly</option>
+            <option value="dropin">Drop-in</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="bs-amount" required min="0.01" step="0.01" value="" placeholder="Enter amount" />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="bs-date" required />
+        </div>
+        <button type="submit" class="btn-primary">Confirm Purchase</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Class -->
+  <div id="add-class-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'add-class-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Class</h3>
+        <button class="close-btn" onclick="closeModal('add-class-modal')">✕</button>
+      </div>
+      <form id="add-class-form" onsubmit="addClass(event)">
+        <div class="form-group">
+          <label>Class Name</label>
+          <input type="text" id="c-name" required placeholder="e.g. Morning Yoga" />
+        </div>
+        <div class="form-group">
+          <label>Instructor</label>
+          <input type="text" id="c-instructor" required placeholder="Instructor name" />
+        </div>
+        <div class="form-group">
+          <label>Day</label>
+          <select id="c-day">
+            <option value="Mon">Monday</option>
+            <option value="Tue">Tuesday</option>
+            <option value="Wed">Wednesday</option>
+            <option value="Thu">Thursday</option>
+            <option value="Fri">Friday</option>
+            <option value="Sat">Saturday</option>
+            <option value="Sun">Sunday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" id="c-time" required />
+        </div>
+        <div class="form-group">
+          <label>Duration (minutes)</label>
+          <input type="number" id="c-duration" value="60" min="15" max="180" step="15" />
+        </div>
+        <div class="form-group">
+          <label>Capacity</label>
+          <input type="number" id="c-capacity" value="20" min="1" max="100" />
+        </div>
+        <button type="submit" class="btn-primary">Add Class</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Record Payment -->
+  <div id="add-payment-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'add-payment-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Record Payment</h3>
+        <button class="close-btn" onclick="closeModal('add-payment-modal')">✕</button>
+      </div>
+      <form id="add-payment-form" onsubmit="addPayment(event)">
+        <div class="form-group">
+          <label>Member</label>
+          <select id="p-member" required></select>
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="p-amount" required min="1" step="0.01" placeholder="100.00" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="p-desc" placeholder="e.g. 10 sessions, drop-in, etc." />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="p-date" required />
+        </div>
+        <button type="submit" class="btn-primary">Record Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Expense -->
+  <div id="add-expense-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'add-expense-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Expense</h3>
+        <button class="close-btn" onclick="closeModal('add-expense-modal')">✕</button>
+      </div>
+      <form id="add-expense-form" onsubmit="addExpense(event)">
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="e-desc" required placeholder="e.g. Electricity, Equipment, Rent" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="e-category">
+            <option value="Rent">Rent</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Salaries">Salaries</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="e-amount" required min="0.01" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="e-date" required />
+        </div>
+        <button type="submit" class="btn-primary" style="background:var(--accent-red)">Add Expense</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Member Detail -->
+  <div id="member-detail-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'member-detail-modal')">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="detail-name">Member</h3>
+        <button class="close-btn" onclick="closeModal('member-detail-modal')">✕</button>
+      </div>
+      <div id="member-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
