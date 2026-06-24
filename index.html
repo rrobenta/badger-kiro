@@ -9,9 +9,34 @@
   <title>Badger MMA</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
+  <!-- Firebase SDK (CDN, no build tools needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div id="app">
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <img src="logo.png" alt="Badger MMA" class="login-logo" />
+      <h2>Badger MMA</h2>
+      <p class="login-sub">Sign in to manage your gym</p>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" required placeholder="admin@badgermma.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" />
+        </div>
+        <div id="login-error" class="login-error"></div>
+        <button type="submit" class="btn-primary" id="login-btn">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" style="display:none">
     <!-- Bottom nav -->
     <nav class="bottom-nav">
       <button class="nav-btn active" data-page="dashboard" onclick="navigate('dashboard')">
@@ -45,7 +70,10 @@
             <img src="logo.png" alt="Badger MMA" class="brand-logo" />
             <h1>Badger MMA</h1>
           </div>
-          <span class="date" id="today-date"></span>
+          <div style="text-align:right">
+            <span class="date" id="today-date"></span>
+            <button class="logout-btn" onclick="handleLogout()">Sign out</button>
+          </div>
         </header>
         <div class="content">
           <div class="stats-grid">
@@ -272,28 +300,20 @@
           <input type="text" id="c-instructor" required placeholder="Instructor name" />
         </div>
         <div class="form-group">
-          <label>Day</label>
-          <select id="c-day">
-            <option value="Mon">Monday</option>
-            <option value="Tue">Tuesday</option>
-            <option value="Wed">Wednesday</option>
-            <option value="Thu">Thursday</option>
-            <option value="Fri">Friday</option>
-            <option value="Sat">Saturday</option>
-            <option value="Sun">Sunday</option>
-          </select>
+          <label>Days</label>
+          <div class="day-checkboxes" id="c-days">
+            <label class="day-check"><input type="checkbox" value="Mon" /><span>Mon</span></label>
+            <label class="day-check"><input type="checkbox" value="Tue" /><span>Tue</span></label>
+            <label class="day-check"><input type="checkbox" value="Wed" /><span>Wed</span></label>
+            <label class="day-check"><input type="checkbox" value="Thu" /><span>Thu</span></label>
+            <label class="day-check"><input type="checkbox" value="Fri" /><span>Fri</span></label>
+            <label class="day-check"><input type="checkbox" value="Sat" /><span>Sat</span></label>
+            <label class="day-check"><input type="checkbox" value="Sun" /><span>Sun</span></label>
+          </div>
         </div>
         <div class="form-group">
           <label>Time</label>
           <input type="time" id="c-time" required />
-        </div>
-        <div class="form-group">
-          <label>Duration (minutes)</label>
-          <input type="number" id="c-duration" value="60" min="15" max="180" step="15" />
-        </div>
-        <div class="form-group">
-          <label>Capacity</label>
-          <input type="number" id="c-capacity" value="20" min="1" max="100" />
         </div>
         <button type="submit" class="btn-primary">Add Class</button>
       </form>

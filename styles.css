@@ -38,6 +38,61 @@ html, body {
   position: relative;
 }
 
+/* ── Login Screen ────────────────────────────────── */
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 30px 24px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.login-card h2 {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.login-card .form-group { text-align: left; }
+
+.login-error {
+  color: var(--accent-red);
+  font-size: 13px;
+  min-height: 18px;
+  margin-bottom: 8px;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+}
+
 /* ── Bottom Nav ──────────────────────────────────── */
 .bottom-nav {
   position: fixed;
@@ -602,6 +657,36 @@ html, body {
 
 .delete-class-btn:active {
   background: rgba(248,113,113,0.3);
+}
+
+/* ── Day Checkboxes ──────────────────────────────── */
+.day-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.day-check {
+  display: flex;
+  cursor: pointer;
+}
+
+.day-check input { display: none; }
+
+.day-check span {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.day-check input:checked + span {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
 }
 
 /* ── Charts ───────────────────────────────────────── */

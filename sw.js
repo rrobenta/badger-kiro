@@ -1,4 +1,4 @@
-const CACHE_NAME = 'badger-mma-v6';
+const CACHE_NAME = 'badger-mma-v7';
 const ASSETS = [
   './',
   './index.html',
