@@ -1,11 +1,11 @@
-const CACHE_NAME = 'badger-mma-v5';
+const CACHE_NAME = 'badger-mma-v6';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/logo.png'
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './logo.png'
 ];
 
 self.addEventListener('install', e => {

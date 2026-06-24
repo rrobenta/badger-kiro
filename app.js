@@ -738,7 +738,7 @@ function toast(msg) {
 document.addEventListener('DOMContentLoaded', () => {
   // Register service worker for PWA install
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
   renderDashboard();
 });
