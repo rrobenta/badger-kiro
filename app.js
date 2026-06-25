@@ -299,8 +299,10 @@ function showMemberDetail(id) {
   if (!m) return;
   const active = isMemberActive(m);
   const typeLabel = m.type === 'monthly' ? 'Monthly' : 'Drop-in';
-  const allClasses = state.classes.sort((a,b) => a.name.localeCompare(b.name));
-  const classOptions = allClasses.map(c => `<option value="${c.name}">${c.name} — ${c.day} ${formatTime(c.time)}</option>`).join('') + '<option value="General">General / Open Gym</option>';
+
+  // Unique class names from existing classes only
+  const classNames = [...new Set(state.classes.map(c => c.name))].sort();
+  const classOptions = classNames.map(name => `<option value="${name}">${name}</option>`).join('') + '<option value="General">General / Open Gym</option>';
 
   document.getElementById('detail-name').textContent = m.name;
   document.getElementById('member-detail-body').innerHTML = `
@@ -315,10 +317,43 @@ function showMemberDetail(id) {
     </div>
     <div class="detail-actions">
       <button class="btn-checkin" onclick="doCheckIn('${m.id}')">Check In</button>
-      <button class="btn-primary" style="width:auto;margin:0;padding:8px 16px;font-size:13px" onclick="openPurchaseForMember('${m.id}'); closeModal('member-detail-modal')">Renew</button>
+      <button class="btn-primary" style="width:auto;margin:0;padding:8px 16px;font-size:13px" onclick="editMember('${m.id}')">Edit</button>
+      <button class="btn-primary" style="width:auto;margin:0;padding:8px 16px;font-size:13px;background:var(--accent-purple)" onclick="openPurchaseForMember('${m.id}'); closeModal('member-detail-modal')">Renew</button>
       <button class="btn-danger" onclick="deleteMember('${m.id}')">Remove</button>
     </div>`;
   openModal('member-detail-modal');
+}
+
+function editMember(id) {
+  const m = state.members.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('detail-name').textContent = 'Edit Member';
+  document.getElementById('member-detail-body').innerHTML = `
+    <form onsubmit="saveMemberEdit(event, '${m.id}')">
+      <div class="form-group"><label>Name</label><input type="text" id="em-name" value="${m.name||''}" required /></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="em-phone" value="${m.phone||''}" /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="em-email" value="${m.email||''}" /></div>
+      <div class="form-group"><label>Type</label>
+        <select id="em-type"><option value="monthly" ${m.type==='monthly'?'selected':''}>Monthly</option><option value="dropin" ${m.type==='dropin'?'selected':''}>Drop-in</option></select></div>
+      <div class="form-group"><label>Expiry (for monthly)</label><input type="date" id="em-expiry" value="${m.expiry||''}" /></div>
+      <div class="detail-actions">
+        <button type="submit" class="btn-primary" style="width:auto;margin:0;padding:10px 20px">Save</button>
+        <button type="button" class="btn-danger" onclick="deleteMember('${m.id}')">Delete</button>
+      </div>
+    </form>`;
+}
+
+function saveMemberEdit(e, id) {
+  e.preventDefault();
+  updateDoc('members', id, {
+    name: document.getElementById('em-name').value.trim(),
+    phone: document.getElementById('em-phone').value.trim(),
+    email: document.getElementById('em-email').value.trim(),
+    type: document.getElementById('em-type').value,
+    expiry: document.getElementById('em-expiry').value || null
+  });
+  closeModal('member-detail-modal');
+  toast('Member updated');
 }
 
 function openPurchaseForMember(id) {
@@ -431,11 +466,39 @@ function classCardHTML(c) {
   const ampm = h >= 12 ? 'PM' : 'AM';
   const h12  = ((h % 12) || 12) + ':' + String(m).padStart(2,'0');
   const daysStr = Array.isArray(c.days) ? c.days.join(', ') : (c.day || '');
-  return `<div class="class-card">
+  return `<div class="class-card" onclick="showClassDetail('${c.id}')">
     <div class="class-time-block"><div class="class-time">${h12}</div><div class="class-dur">${ampm}</div></div>
     <div class="class-info"><div class="class-name">${c.name}</div><div class="class-instructor">👤 ${c.instructor}</div><div class="class-instructor" style="margin-top:2px">${daysStr}</div></div>
     <div class="class-actions">
-      <button class="delete-class-btn" onclick="deleteClass('${c.id}')" title="Delete">✕</button></div></div>`;
+      <button class="delete-class-btn" onclick="event.stopPropagation(); deleteClass('${c.id}')" title="Delete">✕</button></div></div>`;
+}
+
+function showClassDetail(id) {
+  const c = state.classes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('detail-name').textContent = 'Edit Class';
+  document.getElementById('member-detail-body').innerHTML = `
+    <form onsubmit="saveClassEdit(event, '${c.id}')">
+      <div class="form-group"><label>Class Name</label><input type="text" id="ec-name" value="${c.name||''}" required /></div>
+      <div class="form-group"><label>Instructor</label><input type="text" id="ec-instructor" value="${c.instructor||''}" required /></div>
+      <div class="form-group"><label>Time</label><input type="time" id="ec-time" value="${c.time||''}" required /></div>
+      <div class="detail-actions">
+        <button type="submit" class="btn-primary" style="width:auto;margin:0;padding:10px 20px">Save</button>
+        <button type="button" class="btn-danger" onclick="deleteClass('${c.id}'); closeModal('member-detail-modal')">Delete</button>
+      </div>
+    </form>`;
+  openModal('member-detail-modal');
+}
+
+function saveClassEdit(e, id) {
+  e.preventDefault();
+  updateDoc('classes', id, {
+    name: document.getElementById('ec-name').value.trim(),
+    instructor: document.getElementById('ec-instructor').value.trim(),
+    time: document.getElementById('ec-time').value
+  });
+  closeModal('member-detail-modal');
+  toast('Class updated');
 }
 
 function deleteClass(id) { deleteDoc('classes', id); toast('Class removed'); }
@@ -464,10 +527,49 @@ function renderPayments() {
   const sorted = [...state.payments].sort((a,b) => (b.date||'').localeCompare(a.date||''));
   const el = document.getElementById('payments-list');
   if (sorted.length === 0) { el.innerHTML = emptyState('No payments recorded'); return; }
-  el.innerHTML = sorted.map(p => `<div class="list-item">
+  el.innerHTML = sorted.map(p => `<div class="list-item" onclick="showPaymentDetail('${p.id}')">
     <div class="avatar" style="background:${avatarBg(p.memberName)}">${initials(p.memberName)}</div>
     <div class="item-info"><div class="item-title">${p.memberName}</div><div class="item-sub">${p.desc||'—'} · ${formatDate(p.date)}</div></div>
     <div class="item-right"><div style="font-weight:700;color:var(--accent-green)">$${p.amount.toFixed(2)}</div></div></div>`).join('');
+}
+
+function showPaymentDetail(id) {
+  const p = state.payments.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('detail-name').textContent = 'Edit Payment';
+  document.getElementById('member-detail-body').innerHTML = `
+    <form onsubmit="savePaymentEdit(event, '${p.id}')">
+      <div class="form-group"><label>Member</label><input type="text" id="ep-member" value="${p.memberName||''}" required /></div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" id="ep-amount" value="${p.amount}" min="0.01" step="0.01" required /></div>
+      <div class="form-group"><label>Description</label><input type="text" id="ep-desc" value="${p.desc||''}" /></div>
+      <div class="form-group"><label>Type</label>
+        <select id="ep-type"><option value="monthly" ${p.type==='monthly'?'selected':''}>Monthly</option><option value="dropin" ${p.type==='dropin'?'selected':''}>Drop-in</option><option value="other" ${p.type==='other'?'selected':''}>Other</option></select></div>
+      <div class="form-group"><label>Date</label><input type="date" id="ep-date" value="${p.date||''}" required /></div>
+      <div class="detail-actions">
+        <button type="submit" class="btn-primary" style="width:auto;margin:0;padding:10px 20px">Save</button>
+        <button type="button" class="btn-danger" onclick="deletePayment('${p.id}')">Delete</button>
+      </div>
+    </form>`;
+  openModal('member-detail-modal');
+}
+
+function savePaymentEdit(e, id) {
+  e.preventDefault();
+  updateDoc('payments', id, {
+    memberName: document.getElementById('ep-member').value.trim(),
+    amount: parseFloat(document.getElementById('ep-amount').value),
+    desc: document.getElementById('ep-desc').value.trim(),
+    type: document.getElementById('ep-type').value,
+    date: document.getElementById('ep-date').value
+  });
+  closeModal('member-detail-modal');
+  toast('Payment updated');
+}
+
+function deletePayment(id) {
+  deleteDoc('payments', id);
+  closeModal('member-detail-modal');
+  toast('Payment deleted');
 }
 
 function addPayment(e) {
@@ -496,10 +598,48 @@ function renderExpenses() {
   const el = document.getElementById('expenses-list');
   if (sorted.length === 0) { el.innerHTML = emptyState('No expenses recorded'); return; }
   const catColors = { Rent:'var(--accent-purple)', Utilities:'var(--accent-orange)', Equipment:'var(--accent-blue)', Salaries:'var(--accent-green)', Maintenance:'#4fd1c5', Marketing:'#f6ad55', Other:'var(--text-muted)' };
-  el.innerHTML = sorted.map(e => `<div class="list-item">
+  el.innerHTML = sorted.map(e => `<div class="list-item" onclick="showExpenseDetail('${e.id}')">
     <div class="avatar" style="background:${catColors[e.category]||'var(--surface2)'};color:#fff;font-size:11px;">${(e.category||'').slice(0,3)}</div>
     <div class="item-info"><div class="item-title">${e.desc}</div><div class="item-sub">${e.category||''} · ${formatDate(e.date)}</div></div>
     <div class="item-right"><div style="font-weight:700;color:var(--accent-red)">-$${e.amount.toFixed(2)}</div></div></div>`).join('');
+}
+
+function showExpenseDetail(id) {
+  const ex = state.expenses.find(x => x.id === id);
+  if (!ex) return;
+  const categories = ['Rent','Utilities','Equipment','Salaries','Maintenance','Marketing','Other'];
+  document.getElementById('detail-name').textContent = 'Edit Expense';
+  document.getElementById('member-detail-body').innerHTML = `
+    <form onsubmit="saveExpenseEdit(event, '${ex.id}')">
+      <div class="form-group"><label>Description</label><input type="text" id="ee-desc" value="${ex.desc||''}" required /></div>
+      <div class="form-group"><label>Category</label>
+        <select id="ee-category">${categories.map(c => `<option value="${c}" ${ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" id="ee-amount" value="${ex.amount}" min="0.01" step="0.01" required /></div>
+      <div class="form-group"><label>Date</label><input type="date" id="ee-date" value="${ex.date||''}" required /></div>
+      <div class="detail-actions">
+        <button type="submit" class="btn-primary" style="width:auto;margin:0;padding:10px 20px">Save</button>
+        <button type="button" class="btn-danger" onclick="deleteExpense('${ex.id}')">Delete</button>
+      </div>
+    </form>`;
+  openModal('member-detail-modal');
+}
+
+function saveExpenseEdit(e, id) {
+  e.preventDefault();
+  updateDoc('expenses', id, {
+    desc: document.getElementById('ee-desc').value.trim(),
+    category: document.getElementById('ee-category').value,
+    amount: parseFloat(document.getElementById('ee-amount').value),
+    date: document.getElementById('ee-date').value
+  });
+  closeModal('member-detail-modal');
+  toast('Expense updated');
+}
+
+function deleteExpense(id) {
+  deleteDoc('expenses', id);
+  closeModal('member-detail-modal');
+  toast('Expense deleted');
 }
 
 function addExpense(e) {
