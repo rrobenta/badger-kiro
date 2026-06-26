@@ -175,10 +175,14 @@ function renderDashboard() {
   // Monthly expenses and net
   const now2 = new Date();
   const thisMonth2 = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+  const monthName = now2.toLocaleDateString('en-US', { month: 'long' });
   const monthExp = state.expenses.filter(e => e.date && e.date.startsWith(thisMonth2)).reduce((s,e) => s+e.amount, 0);
   const monthRev = parseFloat(monthRevenue());
   const monthNet = monthRev - monthExp;
   document.getElementById('stat-expenses').textContent = '$' + monthExp.toFixed(0);
+  document.getElementById('stat-revenue-label').textContent = `Revenue (${monthName})`;
+  document.getElementById('stat-expenses-label').textContent = `Expenses (${monthName})`;
+  document.getElementById('stat-net-label').textContent = `Net Profit (${monthName})`;
   const netEl = document.getElementById('stat-net');
   netEl.textContent = (monthNet >= 0 ? '$' : '-$') + Math.abs(monthNet).toFixed(0);
   netEl.style.color = monthNet >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
