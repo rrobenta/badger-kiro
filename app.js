@@ -49,7 +49,7 @@ auth.onAuthStateChanged(user => {
 
 /* ── State ───────────────────────────────────────── */
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-let state = { members: [], classes: [], payments: [], checkins: [], expenses: [], rates: { monthly: 150, dropin: 20 } };
+let state = { members: [], classes: [], payments: [], checkins: [], expenses: [], monthlySummaries: [], rates: { monthly: 150, dropin: 20 } };
 let unsubscribers = [];
 
 function initApp() {
@@ -59,12 +59,16 @@ function initApp() {
   listenCollection('payments', data => { state.payments = data; onDataChange(); });
   listenCollection('checkins', data => { state.checkins = data; onDataChange(); });
   listenCollection('expenses', data => { state.expenses = data; onDataChange(); });
+  listenCollection('monthlySummaries', data => { state.monthlySummaries = data; onDataChange(); });
 
   // Load rates
   db.collection('settings').doc('rates').onSnapshot(doc => {
     if (doc.exists) state.rates = doc.data();
     onDataChange();
   });
+
+  // Check if we need to close out previous month
+  checkAndSaveMonthSummary();
 }
 
 function listenCollection(name, callback) {
@@ -78,6 +82,46 @@ function listenCollection(name, callback) {
 
 function onDataChange() {
   renderPage(currentPage);
+}
+
+/* ── Monthly Summary Auto-Save ───────────────────── */
+function checkAndSaveMonthSummary() {
+  // Wait a moment for data to load, then check
+  setTimeout(() => {
+    const now = new Date();
+    // Check if last month's summary already exists
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth()+1).padStart(2,'0')}`;
+
+    // Check Firestore for existing summary
+    db.collection('monthlySummaries').doc(lastMonthKey).get().then(doc => {
+      if (!doc.exists) {
+        // Calculate and save last month's summary
+        const revenue = state.payments
+          .filter(p => p.date && p.date.startsWith(lastMonthKey))
+          .reduce((s, p) => s + p.amount, 0);
+        const expenses = state.expenses
+          .filter(e => e.date && e.date.startsWith(lastMonthKey))
+          .reduce((s, e) => s + e.amount, 0);
+        const net = revenue - expenses;
+        const checkins = state.checkins.filter(c => c.date && c.date.startsWith(lastMonthKey)).length;
+
+        // Only save if there was any activity
+        if (revenue > 0 || expenses > 0 || checkins > 0) {
+          db.collection('monthlySummaries').doc(lastMonthKey).set({
+            month: lastMonthKey,
+            label: lastMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+            revenue,
+            expenses,
+            net,
+            checkins,
+            members: state.members.length,
+            savedAt: new Date().toISOString()
+          });
+        }
+      }
+    }).catch(() => {});
+  }, 3000);
 }
 
 // Firestore helpers
@@ -144,6 +188,7 @@ function renderDashboard() {
   renderRevenueChart();
   renderClassAttendanceChart();
   renderReminders();
+  renderMonthlyHistory();
 
   // Today's classes
   const cl = document.getElementById('today-classes-list');
@@ -268,6 +313,28 @@ function renderReminders() {
       <div class="avatar" style="background:${avatarBg(m.name)}">${initials(m.name)}</div>
       <div class="item-info"><div class="item-title">${m.name}</div><div class="item-sub">Monthly · expires ${formatDate(m.expiry)}</div></div>
       <div class="item-right"><span class="badge ${badge}">${label}</span></div></div>`;
+  }).join('');
+}
+
+function renderMonthlyHistory() {
+  const section = document.getElementById('monthly-history-section');
+  const el = document.getElementById('monthly-history-list');
+  const summaries = [...state.monthlySummaries].sort((a,b) => (b.month||'').localeCompare(a.month||''));
+
+  if (summaries.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  el.innerHTML = summaries.map(s => {
+    const netColor = s.net >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    const netSign = s.net >= 0 ? '+$' : '-$';
+    return `<div class="list-item">
+      <div class="avatar" style="background:var(--surface2);color:var(--accent-purple);font-size:11px;font-weight:700">${(s.month||'').slice(5)}</div>
+      <div class="item-info">
+        <div class="item-title">${s.label || s.month}</div>
+        <div class="item-sub">Revenue: $${(s.revenue||0).toFixed(0)} · Expenses: $${(s.expenses||0).toFixed(0)} · ${s.checkins||0} check-ins</div>
+      </div>
+      <div class="item-right"><div style="font-weight:700;color:${netColor}">${netSign}${Math.abs(s.net||0).toFixed(0)}</div></div>
+    </div>`;
   }).join('');
 }
 
