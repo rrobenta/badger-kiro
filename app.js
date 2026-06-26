@@ -187,7 +187,6 @@ function renderDashboard() {
   netEl.textContent = (monthNet >= 0 ? '$' : '-$') + Math.abs(monthNet).toFixed(0);
   netEl.style.color = monthNet >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
 
-  renderDailySummary(todayStr);
   renderAttendanceChart();
   renderRevenueChart();
   renderClassAttendanceChart();
