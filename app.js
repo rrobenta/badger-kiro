@@ -128,6 +128,17 @@ function renderDashboard() {
   document.getElementById('stat-classes').textContent = todayClasses.length;
   document.getElementById('stat-revenue').textContent = '$' + monthRevenue();
 
+  // Monthly expenses and net
+  const now2 = new Date();
+  const thisMonth2 = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+  const monthExp = state.expenses.filter(e => e.date && e.date.startsWith(thisMonth2)).reduce((s,e) => s+e.amount, 0);
+  const monthRev = parseFloat(monthRevenue());
+  const monthNet = monthRev - monthExp;
+  document.getElementById('stat-expenses').textContent = '$' + monthExp.toFixed(0);
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = (monthNet >= 0 ? '$' : '-$') + Math.abs(monthNet).toFixed(0);
+  netEl.style.color = monthNet >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
   renderDailySummary(todayStr);
   renderAttendanceChart();
   renderRevenueChart();
